@@ -1,0 +1,1047 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>MI Rescue Mission — Nursing Game</title>
+  <style>
+    :root{
+      --bg:#0b1220;
+      --panel:#0f1b31;
+      --card:#101f3a;
+      --ink:#eaf0ff;
+      --muted:#a8b6db;
+      --accent:#7aa7ff;
+      --good:#38d39f;
+      --bad:#ff6b6b;
+      --warn:#ffd166;
+      --line:rgba(255,255,255,.08);
+      --shadow: 0 14px 35px rgba(0,0,0,.35);
+      --radius: 18px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; background:radial-gradient(1200px 800px at 15% 10%, #142650 0%, var(--bg) 55%, #070c16 100%);
+      color:var(--ink); font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      line-height:1.35;
+      padding:20px;
+    }
+    .wrap{max-width:1000px;margin:0 auto}
+    header{
+      display:flex; gap:14px; align-items:flex-start; justify-content:space-between;
+      margin-bottom:14px;
+    }
+    .title{
+      display:flex; flex-direction:column; gap:6px;
+    }
+    h1{font-size:24px;margin:0}
+    .sub{color:var(--muted); margin:0; font-size:14px}
+    .topbar{
+      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .pill{
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      padding:10px 12px;
+      border-radius:999px;
+      display:flex; gap:10px; align-items:center;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+      font-size:13px;
+    }
+    .pill strong{color:var(--ink)}
+    .btn{
+      cursor:pointer;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.06);
+      color:var(--ink);
+      padding:10px 12px;
+      border-radius:12px;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+      transition: transform .08s ease, background .2s ease, border-color .2s ease;
+      font-weight:600;
+    }
+    .btn:hover{transform: translateY(-1px); background:rgba(255,255,255,.08)}
+    .btn:active{transform: translateY(0)}
+    .btn.primary{
+      background:linear-gradient(180deg, rgba(122,167,255,.35), rgba(122,167,255,.12));
+      border-color:rgba(122,167,255,.35);
+    }
+    .grid{
+      display:grid; grid-template-columns: 1.1fr .9fr; gap:14px;
+    }
+    @media (max-width: 900px){
+      .grid{grid-template-columns:1fr}
+      .topbar{justify-content:flex-start}
+    }
+    .panel{
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border:1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .panel .hd{
+      padding:14px 16px;
+      border-bottom:1px solid var(--line);
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      background:rgba(0,0,0,.15);
+    }
+    .panel .hd h2{margin:0;font-size:16px}
+    .panel .bd{padding:16px}
+    .card{
+      background:rgba(10,18,35,.55);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px;
+      margin-bottom:12px;
+    }
+    .card:last-child{margin-bottom:0}
+    .tag{
+      display:inline-flex; gap:8px; align-items:center;
+      font-size:12px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.05);
+      color:var(--muted);
+    }
+    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+    .choices{
+      display:grid; gap:10px; margin-top:12px;
+    }
+    .choice{
+      text-align:left;
+      padding:12px 12px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.05);
+      cursor:pointer;
+      color:var(--ink);
+      transition: transform .08s ease, background .2s ease, border-color .2s ease;
+      display:flex; justify-content:space-between; gap:10px; align-items:flex-start;
+    }
+    .choice:hover{transform: translateY(-1px); background:rgba(255,255,255,.08)}
+    .choice small{color:var(--muted); display:block; margin-top:4px}
+    .choice .pts{font-weight:800; opacity:.9; white-space:nowrap}
+    .feedback{
+      margin-top:12px;
+      border-radius:14px;
+      padding:12px 12px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+    }
+    .feedback.good{border-color:rgba(56,211,159,.35); background:rgba(56,211,159,.10)}
+    .feedback.bad{border-color:rgba(255,107,107,.35); background:rgba(255,107,107,.10)}
+    .feedback.warn{border-color:rgba(255,209,102,.35); background:rgba(255,209,102,.10)}
+    .feedback h3{margin:0 0 6px; font-size:14px}
+    .feedback p{margin:0; color:var(--ink)}
+    .muted{color:var(--muted)}
+    .divider{height:1px;background:var(--line); margin:12px 0}
+    .progress{
+      height:10px; border-radius:999px; background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      overflow:hidden;
+    }
+    .bar{
+      height:100%;
+      width:0%;
+      background:linear-gradient(90deg, rgba(122,167,255,.95), rgba(56,211,159,.95));
+      transition: width .25s ease;
+    }
+    .badge{
+      display:flex; align-items:center; justify-content:space-between;
+      gap:10px; padding:10px 12px; border-radius:14px;
+      border:1px dashed rgba(255,255,255,.18);
+      background:rgba(255,255,255,.04);
+      margin-top:10px;
+    }
+    .badge.locked{opacity:.55}
+    .kbd{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size:12px;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--line);
+      padding:3px 8px; border-radius:10px;
+    }
+    .footer-note{
+      font-size:12px; color:var(--muted);
+      margin-top:10px;
+    }
+    .sr{position:absolute;left:-9999px}
+    details{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      border-radius:14px;
+      padding:10px 12px;
+    }
+    summary{cursor:pointer; font-weight:700}
+    .mini{
+      display:grid; gap:8px; margin-top:8px; color:var(--muted); font-size:13px;
+    }
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace}
+    .toast{
+      position:fixed; bottom:16px; right:16px;
+      max-width:360px;
+      background:rgba(15,27,49,.92);
+      border:1px solid var(--line);
+      border-radius:14px;
+      box-shadow: var(--shadow);
+      padding:12px 12px;
+      display:none;
+      z-index:50;
+    }
+    .toast.show{display:block}
+    .toast h4{margin:0 0 4px; font-size:13px}
+    .toast p{margin:0; font-size:13px; color:var(--muted)}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="title">
+      <h1>MI Rescue Mission 🫀</h1>
+      <p class="sub">Interactive nursing game: assessment → STEMI/NSTEMI → MONA + diagnostics → interventions → care plan priorities.</p>
+    </div>
+
+    <div class="topbar">
+      <div class="pill" aria-label="Score">
+        <span>🏁 Score:</span> <strong id="score">0</strong>
+      </div>
+      <div class="pill" aria-label="Lives">
+        <span>❤️ Lives:</span> <strong id="lives">3</strong>
+      </div>
+      <div class="pill" aria-label="Timer">
+        <span>⏱️ Time:</span> <strong id="time">0:00</strong>
+      </div>
+      <button class="btn" id="btnRestart" title="Restart game (R)">Restart</button>
+      <button class="btn primary" id="btnHint" title="Hint (H)">Hint</button>
+    </div>
+  </header>
+
+  <div class="grid">
+    <!-- LEFT: Gameplay -->
+    <section class="panel" aria-labelledby="playTitle">
+      <div class="hd">
+        <h2 id="playTitle">Case Console</h2>
+        <span class="tag" id="stageTag">Stage 1 / 6</span>
+      </div>
+      <div class="bd">
+        <div class="card">
+          <div class="row" style="justify-content:space-between">
+            <div class="tag">🎯 Goal: <span class="muted" id="goalText">Stabilize ABCs & identify MI red flags</span></div>
+            <div class="tag">📈 Progress</div>
+          </div>
+          <div style="margin-top:10px" class="progress" aria-label="Progress bar">
+            <div class="bar" id="bar"></div>
+          </div>
+          <p class="footer-note">
+            Keyboard: <span class="kbd">H</span> hint • <span class="kbd">R</span> restart • <span class="kbd">1-4</span> choose option
+          </p>
+        </div>
+
+        <div class="card">
+          <div class="row" style="justify-content:space-between">
+            <div>
+              <div class="tag">🧑‍⚕️ Patient</div>
+              <p style="margin:10px 0 0" id="caseText"></p>
+              <p style="margin:8px 0 0" class="muted" id="vitalsText"></p>
+            </div>
+            <div class="tag mono" id="modeTag">MODE: TRIAGE</div>
+          </div>
+
+          <div class="choices" id="choices" role="list"></div>
+
+          <div id="feedback" class="feedback" style="display:none" role="status" aria-live="polite"></div>
+
+          <div class="divider"></div>
+
+          <div class="row" style="justify-content:space-between">
+            <button class="btn primary" id="btnNext" disabled>Next ➜</button>
+            <span class="muted" id="coachLine">Coach: “Think ABC first… then MONA.”</span>
+          </div>
+        </div>
+
+        <details>
+          <summary>📚 Quick Reference (tap to open)</summary>
+          <div class="mini">
+            <div><strong>MI red flags:</strong> crushing chest pain > 20 min, radiating jaw/arm/back, diaphoresis, dyspnea, nausea, dizziness, “impending doom”.</div>
+            <div><strong>STEMI:</strong> ST elevation (usually more complete occlusion) • <strong>NSTEMI:</strong> ST depression/T inversion or even normal ECG (partial occlusion), troponin ↑ in both.</div>
+            <div><strong>MONA:</strong> Morphine (pain/anxiety), Oxygen (if ordered/low O2), Nitrates (vasodilation), Aspirin (antiplatelet).</div>
+            <div><strong>Core nursing actions:</strong> cardiac monitor, IV access, ECG early, troponin trend, prepare reperfusion (PCI/fibrinolytics), education + rehab.</div>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <!-- RIGHT: Dashboard -->
+    <aside class="panel" aria-labelledby="dashTitle">
+      <div class="hd">
+        <h2 id="dashTitle">Mission Dashboard</h2>
+        <span class="tag">🧠 Learning</span>
+      </div>
+      <div class="bd">
+        <div class="card">
+          <div class="tag">🏅 Badges</div>
+          <div id="badges"></div>
+        </div>
+
+        <div class="card">
+          <div class="tag">✅ Checklist</div>
+          <div class="mini" id="checklist"></div>
+        </div>
+
+        <div class="card">
+          <div class="tag">🧩 Mini-Quiz (quick points)</div>
+          <p class="muted" style="margin:8px 0 10px">Answer anytime. Wrong answers cost 1 point only.</p>
+          <div class="choices" id="quiz"></div>
+        </div>
+
+        <div class="card">
+          <div class="tag">📝 Care Plan Builder</div>
+          <p class="muted" style="margin:8px 0 10px">When unlocked, match diagnosis → key assessment → top intervention.</p>
+          <button class="btn" id="btnCarePlan" disabled>Open Care Plan Builder</button>
+          <div id="carePlanZone" style="display:none; margin-top:10px;"></div>
+        </div>
+
+        <p class="footer-note">
+          Tip: Use this in class and ask students to justify why each choice is correct.
+        </p>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <h4 id="toastTitle">Badge unlocked!</h4>
+  <p id="toastBody">Nice work.</p>
+</div>
+
+<script>
+(() => {
+  // ---------- STATE ----------
+  const state = {
+    stage: 0,
+    score: 0,
+    lives: 3,
+    startTime: null,
+    timerId: null,
+    canNext: false,
+    unlocked: {
+      abc: false,
+      ecg: false,
+      mona: false,
+      stemi: false,
+      troponin: false,
+      reperfusion: false,
+      careplan: false
+    }
+  };
+
+  // ---------- CONTENT ----------
+  const stages = [
+    {
+      mode: "TRIAGE",
+      goal: "Stabilize ABCs & identify MI red flags",
+      caseText: "A 58-year-old arrives to ED with heavy chest pressure radiating to the left arm. He looks sweaty and anxious.",
+      vitalsText: "VS: BP 160/95, HR 110, RR 24, SpO₂ 92%, Pain 8/10. Pain started 35 minutes ago.",
+      hint: "Start with ABC. What must you do immediately before deep history?",
+      choices: [
+        {
+          text: "Prioritize ABCs, apply oxygen if ordered/low SpO₂, put on cardiac monitor, establish IV access",
+          why: "Correct: MI is time-sensitive. Stabilize airway/breathing/circulation, monitor rhythm, get IV access for emergency meds/fluids.",
+          pts: 20,
+          tag: "ABCs + Monitor + IV",
+          unlock: ["abc"],
+          good: true,
+          checklist: ["ABCs prioritized", "Cardiac monitor", "IV access started"]
+        },
+        {
+          text: "Ask full diet history and exercise habits first",
+          why: "Not now. Risk factors matter, but MI needs immediate stabilization and diagnostics first.",
+          pts: -10,
+          bad: true
+        },
+        {
+          text: "Send patient to waiting area because BP is high",
+          why: "Dangerous. Chest pain > 20 minutes with radiation + diaphoresis = emergency.",
+          pts: -25,
+          bad: true,
+          life: -1
+        },
+        {
+          text: "Give antacid for heartburn and re-assess later",
+          why: "Symptoms can mimic GI issues, but don’t assume. Treat as MI until proven otherwise.",
+          pts: -15,
+          warn: true
+        }
+      ]
+    },
+    {
+      mode: "ASSESSMENT",
+      goal: "Differentiate angina vs MI using symptom pattern",
+      caseText: "He says: “It feels like squeezing… not relieved by rest.” He tried to sit down but pain stayed. He feels short of breath and nauseated.",
+      vitalsText: "Key clue: Pain persistent > 20 minutes, radiation, diaphoresis.",
+      hint: "What feature supports MI over stable angina?",
+      choices: [
+        {
+          text: "Pain lasts > 20 minutes and is not relieved by rest or nitrates",
+          why: "Correct: MI pain is prolonged and typically unrelieved by rest/nitro; angina is shorter and triggered by exertion/stress.",
+          pts: 18,
+          good: true,
+          checklist: ["MI red flags identified"]
+        },
+        {
+          text: "Pain occurs only during exercise and resolves within 5–10 minutes",
+          why: "That sounds more like stable angina, not MI.",
+          pts: -8,
+          warn: true
+        },
+        {
+          text: "Pain is always sharp and changes with breathing",
+          why: "Not typical for MI; consider other causes, but still be cautious.",
+          pts: -6,
+          warn: true
+        },
+        {
+          text: "MI pain always improves immediately with nitroglycerin",
+          why: "No. MI pain may NOT improve with nitro.",
+          pts: -10,
+          bad: true
+        }
+      ]
+    },
+    {
+      mode: "DIAGNOSTICS",
+      goal: "Order/prepare the most urgent diagnostic tests",
+      caseText: "Your team is ready. What diagnostic step must happen ASAP on arrival?",
+      vitalsText: "Remember: ECG is time-critical in suspected MI.",
+      hint: "What should be done within minutes in ED for suspected MI?",
+      choices: [
+        {
+          text: "Obtain a 12-lead ECG immediately and interpret ST changes",
+          why: "Correct: ECG early helps identify STEMI vs NSTEMI and guides urgent reperfusion decisions.",
+          pts: 20,
+          good: true,
+          unlock: ["ecg"],
+          checklist: ["ECG obtained early"]
+        },
+        {
+          text: "Wait 6 hours then do ECG because troponin rises later",
+          why: "No—ECG should not wait. Troponin timing does not delay ECG.",
+          pts: -18,
+          bad: true,
+          life: -1
+        },
+        {
+          text: "Do CT coronary angiogram first for all patients",
+          why: "CT can help in some cases, but ECG is the fastest and most urgent first-line test in ED suspicion.",
+          pts: -10,
+          warn: true
+        },
+        {
+          text: "Skip ECG if the patient looks stable",
+          why: "Symptoms can be deceptive. MI can deteriorate quickly.",
+          pts: -15,
+          bad: true
+        }
+      ]
+    },
+    {
+      mode: "STEMI vs NSTEMI",
+      goal: "Recognize ECG patterns and act correctly",
+      caseText: "ECG shows ST-segment elevation in contiguous leads. The patient is still in severe pain.",
+      vitalsText: "This pattern suggests more complete occlusion → urgent reperfusion pathway.",
+      hint: "ST elevation usually means what? And what is the priority pathway?",
+      choices: [
+        {
+          text: "Identify STEMI → activate reperfusion pathway (PCI if available; fibrinolytics if PCI not available)",
+          why: "Correct: STEMI needs urgent reperfusion to save myocardium (PCI preferred when available; fibrinolytics when appropriate).",
+          pts: 25,
+          good: true,
+          unlock: ["stemi", "reperfusion"],
+          checklist: ["STEMI recognized", "Reperfusion prepared"]
+        },
+        {
+          text: "This is NSTEMI; just observe and repeat ECG tomorrow",
+          why: "Incorrect. ST elevation = STEMI until proven otherwise. Delay increases infarct size.",
+          pts: -25,
+          bad: true,
+          life: -1
+        },
+        {
+          text: "Give only oxygen and discharge if pain improves",
+          why: "Unsafe. Needs full MI protocol and reperfusion decision.",
+          pts: -20,
+          bad: true,
+          life: -1
+        },
+        {
+          text: "Ignore ECG changes and focus only on blood pressure control",
+          why: "BP control matters, but ECG pattern drives urgent MI actions.",
+          pts: -14,
+          warn: true
+        }
+      ]
+    },
+    {
+      mode: "MONA + Labs",
+      goal: "Start symptom relief and confirm myocardial injury",
+      caseText: "While preparing reperfusion, you must manage pain/ischemia and confirm injury with labs.",
+      vitalsText: "Troponin rises ~4–9h, peaks 12–24h, can stay high 1–2 weeks (trend matters).",
+      hint: "What bundle best fits MONA + troponin approach?",
+      choices: [
+        {
+          text: "Give aspirin (if no contraindication), nitrates for pain PRN, oxygen as ordered, morphine for severe pain/anxiety + send troponin levels",
+          why: "Correct: MONA + troponin. Aspirin is antiplatelet, nitrates vasodilate, oxygen supports oxygenation when indicated, morphine reduces pain/anxiety; troponin confirms injury (trend).",
+          pts: 22,
+          good: true,
+          unlock: ["mona", "troponin"],
+          checklist: ["MONA started appropriately", "Troponin ordered"]
+        },
+        {
+          text: "Start antibiotics and steroids because MI is inflammation",
+          why: "Not indicated for MI management.",
+          pts: -18,
+          bad: true
+        },
+        {
+          text: "Avoid aspirin in all cases because it thins blood",
+          why: "Aspirin is often given unless contraindicated; it helps prevent clot growth.",
+          pts: -12,
+          warn: true
+        },
+        {
+          text: "Give high-dose nitrates even if BP is low",
+          why: "Unsafe. Nitrates can worsen hypotension—always check vitals/contraindications.",
+          pts: -15,
+          bad: true,
+          life: -1
+        }
+      ]
+    },
+    {
+      mode: "RECOVERY + CARE PLAN",
+      goal: "Prioritize nursing diagnoses and patient education",
+      caseText: "The patient is stabilized and moving into recovery planning. What is your best nursing priority set?",
+      vitalsText: "Think: acute pain, anxiety, decreased cardiac output, tissue perfusion, unstable BP risk + rehab & education.",
+      hint: "Pick the option that combines monitoring + rehab + teach-back.",
+      choices: [
+        {
+          text: "Monitor rhythm/VS, assess for decreased cardiac output signs, manage pain/anxiety, support rehab + teach-back meds/lifestyle/follow-up",
+          why: "Correct: This matches MI nursing priorities: monitor for complications, manage symptoms, and prevent recurrence with education and rehab.",
+          pts: 25,
+          good: true,
+          unlock: ["careplan"],
+          checklist: ["Complication monitoring", "Rehab & education planned", "Teach-back included"]
+        },
+        {
+          text: "Focus only on diet handout and ignore monitoring because MI is already treated",
+          why: "Monitoring is essential—arrhythmias/shock can occur after MI.",
+          pts: -18,
+          bad: true
+        },
+        {
+          text: "Tell patient not to ask questions to reduce anxiety",
+          why: "Opposite—information and involvement reduces anxiety and improves adherence.",
+          pts: -15,
+          bad: true
+        },
+        {
+          text: "Encourage intense exercise immediately to strengthen heart",
+          why: "Exercise must progress gradually; early intense activity can be unsafe.",
+          pts: -12,
+          warn: true
+        }
+      ]
+    }
+  ];
+
+  const miniQuiz = [
+    {
+      q: "NSTEMI may show which ECG pattern?",
+      options: [
+        {t:"ST elevation only", ok:false, why:"ST elevation suggests STEMI."},
+        {t:"T-wave inversion or ST depression (or sometimes normal ECG)", ok:true, why:"NSTEMI can show ST depression/T inversion or even normal ECG."},
+        {t:"Always pathological Q waves immediately", ok:false, why:"Q waves can indicate MI but not always immediate or universal."}
+      ]
+    },
+    {
+      q: "Pain suggesting MI rather than angina is…",
+      options: [
+        {t:"<10 minutes and relieved by rest", ok:false, why:"More like stable angina."},
+        {t:">20 minutes, persistent, may radiate jaw/arm, diaphoresis", ok:true, why:"Classic MI pattern."},
+        {t:"Only sharp pain with breathing", ok:false, why:"Not typical for MI."}
+      ]
+    },
+    {
+      q: "Troponin timing (typical) is…",
+      options: [
+        {t:"Peaks at 5 minutes and normal in 1 hour", ok:false, why:"Too fast."},
+        {t:"Rises ~4–9h, peaks 12–24h, may stay high 1–2 weeks", ok:true, why:"That’s the common teaching timeline."},
+        {t:"Only rises in STEMI, never in NSTEMI", ok:false, why:"Troponin rises in both STEMI and NSTEMI."}
+      ]
+    }
+  ];
+
+  // Care plan builder dataset (unlocks after stage 6)
+  const carePlanItems = [
+    {
+      dx: "Acute Pain",
+      assess: "Assess pain characteristics; differentiate angina vs MI; obtain ECG during symptoms",
+      intv: "Administer nitrates/oxygen/morphine as ordered; evaluate pain relief"
+    },
+    {
+      dx: "Anxiety",
+      assess: "Observe subjective/objective cues; assess coping",
+      intv: "Provide information; involve patient; teach anxiety reduction strategies"
+    },
+    {
+      dx: "Decreased Cardiac Output",
+      assess: "Monitor BP, rhythm, urine output, mentation; assess for shock",
+      intv: "Oxygen, IV access, prepare resuscitation/cath/thrombolytics; activity restriction"
+    },
+    {
+      dx: "Ineffective Tissue Perfusion",
+      assess: "ECG; pulses/cap refill/skin color; cardiovascular status",
+      intv: "Aspirin if not contraindicated; initiate reperfusion; refer rehab"
+    }
+  ];
+
+  // ---------- UI ----------
+  const elScore = document.getElementById("score");
+  const elLives = document.getElementById("lives");
+  const elTime = document.getElementById("time");
+  const elStageTag = document.getElementById("stageTag");
+  const elGoal = document.getElementById("goalText");
+  const elCase = document.getElementById("caseText");
+  const elVitals = document.getElementById("vitalsText");
+  const elMode = document.getElementById("modeTag");
+  const elChoices = document.getElementById("choices");
+  const elFeedback = document.getElementById("feedback");
+  const elNext = document.getElementById("btnNext");
+  const elRestart = document.getElementById("btnRestart");
+  const elHint = document.getElementById("btnHint");
+  const elBar = document.getElementById("bar");
+  const elCoach = document.getElementById("coachLine");
+  const elBadges = document.getElementById("badges");
+  const elChecklist = document.getElementById("checklist");
+  const elQuiz = document.getElementById("quiz");
+  const elCareBtn = document.getElementById("btnCarePlan");
+  const elCareZone = document.getElementById("carePlanZone");
+  const toast = document.getElementById("toast");
+  const toastTitle = document.getElementById("toastTitle");
+  const toastBody = document.getElementById("toastBody");
+
+  const badgeDefs = [
+    {key:"abc", name:"ABC Guardian", desc:"You prioritized ABC + monitoring early."},
+    {key:"ecg", name:"ECG Sprinter", desc:"You obtained ECG promptly."},
+    {key:"stemi", name:"STEMI Spotter", desc:"You recognized STEMI correctly."},
+    {key:"mona", name:"MONA Master", desc:"You started MONA appropriately."},
+    {key:"reperfusion", name:"Reperfusion Ready", desc:"You activated PCI/fibrinolytic pathway."},
+    {key:"careplan", name:"Care Plan Captain", desc:"You prioritized recovery + teach-back."}
+  ];
+
+  const checklistState = new Set();
+
+  function fmtTime(sec){
+    const m = Math.floor(sec/60);
+    const s = sec%60;
+    return `${m}:${String(s).padStart(2,"0")}`;
+  }
+
+  function showToast(title, body){
+    toastTitle.textContent = title;
+    toastBody.textContent = body;
+    toast.classList.add("show");
+    setTimeout(()=>toast.classList.remove("show"), 2600);
+  }
+
+  function renderBadges(){
+    elBadges.innerHTML = "";
+    badgeDefs.forEach(b=>{
+      const locked = !state.unlocked[b.key];
+      const div = document.createElement("div");
+      div.className = "badge" + (locked ? " locked":"");
+      div.innerHTML = `
+        <div>
+          <div style="font-weight:800">${locked ? "🔒" : "🏅"} ${b.name}</div>
+          <div class="muted" style="font-size:12px;margin-top:2px">${b.desc}</div>
+        </div>
+        <div class="tag">${locked ? "Locked" : "Unlocked"}</div>
+      `;
+      elBadges.appendChild(div);
+    });
+  }
+
+  function renderChecklist(){
+    const items = Array.from(checklistState);
+    if(items.length === 0){
+      elChecklist.innerHTML = `<div class="muted">No items yet — start Stage 1.</div>`;
+      return;
+    }
+    elChecklist.innerHTML = items.map(i=>`<div>✅ ${escapeHtml(i)}</div>`).join("");
+  }
+
+  function escapeHtml(str){
+    return str.replace(/[&<>"']/g, m => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[m]));
+  }
+
+  function setScore(delta){
+    state.score = Math.max(0, state.score + delta);
+    elScore.textContent = state.score;
+  }
+
+  function setLives(delta){
+    state.lives = Math.max(0, state.lives + delta);
+    elLives.textContent = state.lives;
+    if(state.lives === 0){
+      gameOver();
+    }
+  }
+
+  function setFeedback(kind, title, text){
+    elFeedback.style.display = "block";
+    elFeedback.className = "feedback " + kind;
+    elFeedback.innerHTML = `<h3>${title}</h3><p>${escapeHtml(text)}</p>`;
+  }
+
+  function lockNext(){
+    state.canNext = false;
+    elNext.disabled = true;
+  }
+  function unlockNext(){
+    state.canNext = true;
+    elNext.disabled = false;
+  }
+
+  function progressPct(){
+    return Math.round((state.stage / stages.length) * 100);
+  }
+
+  function renderStage(){
+    const s = stages[state.stage];
+    elStageTag.textContent = `Stage ${state.stage + 1} / ${stages.length}`;
+    elGoal.textContent = s.goal;
+    elCase.textContent = s.caseText;
+    elVitals.textContent = s.vitalsText;
+    elMode.textContent = `MODE: ${s.mode}`;
+    elBar.style.width = `${progressPct()}%`;
+    elCoach.textContent = pickCoachLine();
+
+    elChoices.innerHTML = "";
+    lockNext();
+    elFeedback.style.display = "none";
+
+    s.choices.forEach((c, idx)=>{
+      const btn = document.createElement("button");
+      btn.className = "choice";
+      btn.setAttribute("role","listitem");
+      btn.innerHTML = `
+        <div>
+          <div style="font-weight:800">${idx+1}. ${escapeHtml(c.text)}</div>
+          ${c.tag ? `<small>Key: ${escapeHtml(c.tag)}</small>` : `<small>${escapeHtml(s.mode)} decision</small>`}
+        </div>
+        <div class="pts">${c.pts >= 0 ? "+" : ""}${c.pts} pts</div>
+      `;
+      btn.addEventListener("click", ()=>choose(idx));
+      elChoices.appendChild(btn);
+    });
+
+    // care plan unlock
+    if(state.unlocked.careplan){
+      elCareBtn.disabled = false;
+    }
+
+    // Stage-based badge refresh
+    renderBadges();
+    renderChecklist();
+  }
+
+  function pickCoachLine(){
+    const lines = [
+      "Coach: “ABCs first. Then ECG. Time is muscle.”",
+      "Coach: “If pain >20 min + radiation + sweat… treat as MI until proven otherwise.”",
+      "Coach: “NSTEMI can have normal ECG—troponin trend matters.”",
+      "Coach: “ST elevation? Think STEMI → reperfusion pathway.”",
+      "Coach: “MONA is symptom + ischemia control—don’t forget contraindications.”",
+      "Coach: “Recovery is monitoring + rehab + teach-back.”"
+    ];
+    return lines[Math.min(state.stage, lines.length-1)];
+  }
+
+  function unlock(keys){
+    keys.forEach(k=>{
+      if(!state.unlocked[k]){
+        state.unlocked[k] = true;
+        const b = badgeDefs.find(x=>x.key===k);
+        if(b) showToast("Badge unlocked!", `${b.name} — ${b.desc}`);
+      }
+    });
+    renderBadges();
+  }
+
+  function choose(idx){
+    const s = stages[state.stage];
+    const c = s.choices[idx];
+
+    // disable all buttons after choose
+    Array.from(elChoices.querySelectorAll("button")).forEach(b=>b.disabled = true);
+
+    setScore(c.pts || 0);
+    if(c.life) setLives(c.life);
+
+    if(c.checklist){
+      c.checklist.forEach(item=>checklistState.add(item));
+      renderChecklist();
+    }
+
+    if(c.unlock) unlock(c.unlock);
+
+    if(c.good){
+      setFeedback("good", "✅ Correct!", c.why);
+      unlockNext();
+    } else if(c.bad){
+      setFeedback("bad", "❌ Not safe / incorrect", c.why);
+      unlockNext(); // still allow move to keep flow in class
+    } else {
+      setFeedback("warn", "⚠️ Not best answer", c.why);
+      unlockNext();
+    }
+
+    // If this stage is final and correct answer chosen, celebrate
+    if(state.stage === stages.length - 1 && c.good){
+      showToast("Mission complete!", "You stabilized MI care from triage → recovery. Great work.");
+    }
+  }
+
+  function nextStage(){
+    if(!state.canNext) return;
+    state.stage++;
+    if(state.stage >= stages.length){
+      winScreen();
+      return;
+    }
+    renderStage();
+  }
+
+  function restart(){
+    state.stage = 0;
+    state.score = 0;
+    state.lives = 3;
+    state.unlocked = {abc:false, ecg:false, mona:false, stemi:false, troponin:false, reperfusion:false, careplan:false};
+    checklistState.clear();
+    elScore.textContent = state.score;
+    elLives.textContent = state.lives;
+    elBar.style.width = "0%";
+    elFeedback.style.display = "none";
+    elCareZone.style.display = "none";
+    elCareBtn.disabled = true;
+
+    // timer reset
+    stopTimer();
+    startTimer();
+
+    renderBadges();
+    renderChecklist();
+    renderQuiz();
+    renderStage();
+  }
+
+  function startTimer(){
+    state.startTime = Date.now();
+    state.timerId = setInterval(()=>{
+      const sec = Math.floor((Date.now() - state.startTime)/1000);
+      elTime.textContent = fmtTime(sec);
+    }, 250);
+  }
+  function stopTimer(){
+    if(state.timerId) clearInterval(state.timerId);
+    state.timerId = null;
+  }
+
+  function hint(){
+    const s = stages[state.stage];
+    showToast("Hint", s.hint);
+  }
+
+  function gameOver(){
+    stopTimer();
+    setFeedback("bad", "💥 Game Over", "You ran out of lives. Restart and try safer choices (ABCs → ECG → reperfusion/MONA).");
+    elNext.disabled = true;
+    Array.from(elChoices.querySelectorAll("button")).forEach(b=>b.disabled = true);
+  }
+
+  function winScreen(){
+    stopTimer();
+    elBar.style.width = "100%";
+    const timeSpent = elTime.textContent;
+
+    elCase.textContent = `Mission Summary: You completed MI Rescue Mission with score ${state.score} in ${timeSpent}.`;
+    elVitals.textContent = "Now test your care planning skills in the Care Plan Builder.";
+
+    elChoices.innerHTML = `
+      <div class="feedback good">
+        <h3>🏁 You finished!</h3>
+        <p><strong>Key flow:</strong> ABCs + monitor + IV → identify MI red flags → ECG early → STEMI vs NSTEMI → MONA + troponin → prepare reperfusion → rehab + teach-back.</p>
+      </div>
+    `;
+    elNext.disabled = true;
+
+    // unlock care plan
+    state.unlocked.careplan = true;
+    elCareBtn.disabled = false;
+    renderBadges();
+  }
+
+  // ---------- MINI QUIZ ----------
+  function renderQuiz(){
+    elQuiz.innerHTML = "";
+    miniQuiz.forEach((qItem, qi)=>{
+      const box = document.createElement("div");
+      box.className = "card";
+      box.style.marginBottom = "10px";
+      box.innerHTML = `<div style="font-weight:800;margin-bottom:8px">Q${qi+1}. ${escapeHtml(qItem.q)}</div>`;
+      qItem.options.forEach((opt)=>{
+        const b = document.createElement("button");
+        b.className = "choice";
+        b.innerHTML = `<div>${escapeHtml(opt.t)}<small>${escapeHtml("Tap to answer")}</small></div><div class="pts">+?</div>`;
+        b.addEventListener("click", ()=>{
+          if(opt.ok){
+            setScore(3);
+            showToast("Mini-Quiz ✅", opt.why);
+          }else{
+            setScore(-1);
+            showToast("Mini-Quiz ⚠️", opt.why);
+          }
+        });
+        box.appendChild(b);
+      });
+      elQuiz.appendChild(box);
+    });
+  }
+
+  // ---------- CARE PLAN BUILDER ----------
+  function openCarePlan(){
+    if(!state.unlocked.careplan) return;
+    elCareZone.style.display = "block";
+    elCareZone.innerHTML = "";
+    const intro = document.createElement("div");
+    intro.className = "feedback warn";
+    intro.innerHTML = `<h3>Care Plan Builder</h3><p>Match each diagnosis to the best assessment + intervention. Earn +5 points per correct match.</p>`;
+    elCareZone.appendChild(intro);
+
+    const dxList = carePlanItems.map(x=>x.dx);
+    const assessList = shuffle(carePlanItems.map(x=>x.assess));
+    const intvList = shuffle(carePlanItems.map(x=>x.intv));
+
+    carePlanItems.forEach((item)=>{
+      const card = document.createElement("div");
+      card.className = "card";
+
+      const assessSel = document.createElement("select");
+      const intvSel = document.createElement("select");
+      styleSelect(assessSel); styleSelect(intvSel);
+
+      assessSel.innerHTML = `<option value="">Choose assessment…</option>` + assessList.map(a=>`<option value="${escapeAttr(a)}">${escapeHtml(a)}</option>`).join("");
+      intvSel.innerHTML = `<option value="">Choose intervention…</option>` + intvList.map(i=>`<option value="${escapeAttr(i)}">${escapeHtml(i)}</option>`).join("");
+
+      const btn = document.createElement("button");
+      btn.className = "btn primary";
+      btn.textContent = "Check";
+      const result = document.createElement("div");
+      result.className = "muted";
+      result.style.marginTop = "10px";
+
+      btn.addEventListener("click", ()=>{
+        const okA = assessSel.value === item.assess;
+        const okI = intvSel.value === item.intv;
+        if(okA && okI){
+          setScore(5);
+          result.innerHTML = `<span style="color: var(--good); font-weight:800">✅ Correct</span> (+5 pts)`;
+        }else{
+          setScore(-1);
+          result.innerHTML = `<span style="color: var(--warn); font-weight:800">⚠️ Not quite</span> (-1 pt). Try again.`;
+        }
+      });
+
+      card.innerHTML = `
+        <div class="tag">Diagnosis: <strong style="color:var(--ink)">${escapeHtml(item.dx)}</strong></div>
+        <div style="margin-top:10px" class="mini"></div>
+      `;
+      const mini = card.querySelector(".mini");
+      mini.appendChild(labelWrap("Assessment", assessSel));
+      mini.appendChild(labelWrap("Intervention", intvSel));
+      card.appendChild(btn);
+      card.appendChild(result);
+      elCareZone.appendChild(card);
+    });
+
+    const tip = document.createElement("div");
+    tip.className = "footer-note";
+    tip.textContent = "Teaching idea: ask students to justify the intervention with “because…” (link to pathophysiology).";
+    elCareZone.appendChild(tip);
+  }
+
+  function styleSelect(sel){
+    sel.style.width = "100%";
+    sel.style.padding = "10px 12px";
+    sel.style.borderRadius = "12px";
+    sel.style.border = "1px solid rgba(255,255,255,.12)";
+    sel.style.background = "rgba(255,255,255,.06)";
+    sel.style.color = "white";
+    sel.style.outline = "none";
+  }
+
+  function labelWrap(lbl, node){
+    const wrap = document.createElement("div");
+    wrap.innerHTML = `<div style="font-weight:800;margin-bottom:6px">${escapeHtml(lbl)}</div>`;
+    wrap.appendChild(node);
+    return wrap;
+  }
+
+  function escapeAttr(str){
+    return str.replace(/"/g, "&quot;");
+  }
+
+  function shuffle(arr){
+    const a = arr.slice();
+    for(let i=a.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [a[i],a[j]] = [a[j],a[i]];
+    }
+    return a;
+  }
+
+  // ---------- EVENTS ----------
+  elNext.addEventListener("click", nextStage);
+  elRestart.addEventListener("click", restart);
+  elHint.addEventListener("click", hint);
+  elCareBtn.addEventListener("click", openCarePlan);
+
+  document.addEventListener("keydown", (e)=>{
+    const k = e.key.toLowerCase();
+    if(k === "h") hint();
+    if(k === "r") restart();
+    if(["1","2","3","4"].includes(e.key)){
+      const idx = Number(e.key) - 1;
+      const btns = Array.from(elChoices.querySelectorAll("button"));
+      if(btns[idx] && !btns[idx].disabled) btns[idx].click();
+    }
+  });
+
+  // ---------- INIT ----------
+  function init(){
+    renderBadges();
+    renderChecklist();
+    renderQuiz();
+    startTimer();
+    renderStage();
+  }
+  init();
+})();
+</script>
+</body>
+</html>
